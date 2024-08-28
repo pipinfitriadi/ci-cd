@@ -8,4 +8,6 @@ Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
 # CI/CD
 
+![License](https://img.shields.io/gitlab/license/pipinfitriadi%2Fci-cd)
+
 Continuous Integration and Continuous Delivery
