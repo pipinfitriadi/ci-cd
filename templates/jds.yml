@@ -4,8 +4,7 @@
 # Proprietary and confidential
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
-stages:
-  - Test
+stages: [Test]
 Code Quality:
   stage: Test
   image: pipelinecomponents/flake8
@@ -15,3 +14,16 @@ Code Quality:
     - pip install --upgrade pip
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
     - flake8
+Airflow Dags Import:
+  stage: Test
+  image:
+    name: apache/airflow:slim-2.3.4-python3.8
+    entrypoint: [""]
+    docker:
+      user: airflow
+  variables:
+    AIRFLOW__CORE__DAGS_FOLDER: airflow/dags/
+  before_script:
+    - airflow db init
+  script:
+    - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
