@@ -13,5 +13,5 @@ Code Quality:
     PIP_ROOT_USER_ACTION: ignore
   script:
     - pip install --upgrade pip
-    - pip install flake8-black flake8-bugbear
+    - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
     - flake8
