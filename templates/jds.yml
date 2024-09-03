@@ -4,12 +4,9 @@
 # Proprietary and confidential
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
-spec:
-  inputs:
-    stage:
-      default: Test
----
+stages:
+  - Test
 Code Quality:
-  stage: $[[ inputs.stage ]]
+  stage: Test
   image: pipelinecomponents/flake8
   script: flake8
