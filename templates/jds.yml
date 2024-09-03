@@ -9,4 +9,9 @@ stages:
 Code Quality:
   stage: Test
   image: pipelinecomponents/flake8
-  script: flake8
+  variables:
+    PIP_ROOT_USER_ACTION: ignore
+  script:
+    - pip install --upgrade pip
+    - pip install flake8-black flake8-bugbear
+    - flake8
