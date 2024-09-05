@@ -4,7 +4,7 @@
 # Proprietary and confidential
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
-stages: [Test]
+stages: [Test, Release]
 Code Quality:
   stage: Test
   image: pipelinecomponents/flake8
@@ -27,7 +27,7 @@ Dags Import Check:
         - airflow/dags/**/dag_*.py
   image:
     name: apache/airflow:slim-2.3.4-python3.8
-    entrypoint: [""]
+    entrypoint: ['']
     docker:
       user: airflow
   variables:
@@ -36,3 +36,40 @@ Dags Import Check:
     - airflow db init
   script:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
+Dags Release:
+  stage: Release
+  needs: [Dags Import Check]
+  image:
+    name: bitnami/git:2.36.1
+  variables:
+    GIT_LFS_SKIP_SMUDGE: 1
+    REPO_ROOT: https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com
+    REPO_BRANCH: airflow-k8s
+  before_script:
+    - git config --global user.email "$GITLAB_EMAIL"
+    - git config --global user.name "$GITLAB_USERNAME"
+    - git config --global url."$REPO_ROOT".insteadOf https://gitlab.com
+    - git clone --depth 1 $REPO_ROOT/jdsteam/core-data-platform/data-pipeline.git /tmp/data-pipeline/ --single-branch --branch $REPO_BRANCH
+    - cd /tmp/data-pipeline/
+  script:
+    - |
+      if [ $(git submodule--helper list | awk '{print $4}' | grep DAG/$CI_PROJECT_NAME) ]; then
+        git submodule update --init -- DAG/$CI_PROJECT_NAME
+        git submodule deinit -f -- DAG/$CI_PROJECT_NAME
+        git rm -f DAG/$CI_PROJECT_NAME
+        rm -rf .git/modules/DAG/$CI_PROJECT_NAME/
+      fi
+    - rm -rf DAG/$CI_PROJECT_NAME/
+    - |
+      find /gcl-builds/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
+        # Create the destination directory if it doesn't exist
+        dest_dir="DAG/$CI_PROJECT_NAME/$(dirname "${file#/gcl-builds/airflow/dags/}")"
+        mkdir -p "$dest_dir"
+        # Copy the file
+        cp "$file" "$dest_dir/"
+      done
+    - git diff HEAD
+    - git add --all
+    - git status
+    - git commit -m "Submodule DAG/$CI_PROJECT_NAME | $CI_COMMIT_MESSAGE"
+    - git push origin HEAD:$REPO_BRANCH
