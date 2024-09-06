@@ -4,7 +4,18 @@
 # Proprietary and confidential
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
-stages: [Test, Release]
+spec:
+  inputs:
+    infra-provider:
+      description: Choose target infrastructure provider for deployment
+      default: JabarCloud-v1
+      options:
+        - JabarCloud-v1
+        - JabarCloud-v2
+---
+include:
+  - local: templates/infra-provider/$[[ inputs.infra-provider ]].yml
+stages: [Test, Deploy]
 Code Quality:
   stage: Test
   image: pipelinecomponents/flake8
@@ -18,15 +29,18 @@ Code Quality:
 Dags Import Check:
   stage: Test
   rules:
-    - if: |
-        $CI_COMMIT_TAG ||
-        $CI_COMMIT_BRANCH == 'main'
-      exists:
+    - exists:
         - airflow/dags/**/dag_*.py
       changes:
         - airflow/dags/**/dag_*.py
+      if: |
+        $CI_COMMIT_BRANCH == 'main' ||
+        (
+          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
+          $CI_COMMIT_BRANCH == 'develop'
+        )
   image:
-    name: apache/airflow:slim-2.3.4-python3.8
+    name: apache/airflow:slim-$AIRFLOW_VERSION-python3.8
     entrypoint: ['']
     docker:
       user: airflow
@@ -36,21 +50,30 @@ Dags Import Check:
     - airflow db init
   script:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
-Dags Release:
-  stage: Release
+Dags Deploy:
+  stage: Deploy
   needs: [Dags Import Check]
-  image:
-    name: bitnami/git:2.36.1
+  rules:
+    - exists:
+        - airflow/dags/**/dag_*.py
+      changes:
+        - airflow/dags/**/dag_*.py
+      if: |
+        $CI_COMMIT_BRANCH == 'main' ||
+        (
+          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
+          $CI_COMMIT_BRANCH == 'develop'
+        )
+  image: bitnami/git:2.36.1
   variables:
     GIT_LFS_SKIP_SMUDGE: 1
-    REPO_ROOT: https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com
-    REPO_BRANCH: airflow-k8s
   before_script:
-    - git config --global user.email "$GITLAB_EMAIL"
-    - git config --global user.name "$GITLAB_USERNAME"
-    - git config --global url."$REPO_ROOT".insteadOf https://gitlab.com
-    - git clone --depth 1 $REPO_ROOT/jdsteam/core-data-platform/data-pipeline.git /tmp/data-pipeline/ --single-branch --branch $REPO_BRANCH
-    - cd /tmp/data-pipeline/
+    - COMMIT_MESSAGE=$(git show $CI_COMMIT_SHA --pretty=format:"%s%nCommit Origin":" $(git remote get-url origin | sed 's/\.git$//')/-/commit/%h" --no-patch)
+    - git config --global user.email $(git show $CI_COMMIT_SHA --pretty=format:'%ae' --no-patch)
+    - git config --global user.name $(git show $CI_COMMIT_SHA --pretty=format:'%an' --no-patch)
+    - git config --global url.https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com.insteadOf https://gitlab.com
+    - git clone --depth 1 $GIT_REPO /tmp/repo/ --single-branch --branch $GIT_BRANCH
+    - cd /tmp/repo/
   script:
     - |
       if [ $(git submodule--helper list | awk '{print $4}' | grep DAG/$CI_PROJECT_NAME) ]; then
@@ -62,14 +85,14 @@ Dags Release:
     - rm -rf DAG/$CI_PROJECT_NAME/
     - |
       find /gcl-builds/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
-        # Create the destination directory if it doesn't exist
-        dest_dir="DAG/$CI_PROJECT_NAME/$(dirname "${file#/gcl-builds/airflow/dags/}")"
-        mkdir -p "$dest_dir"
-        # Copy the file
-        cp "$file" "$dest_dir/"
+        dest_dir=DAG/$CI_PROJECT_NAME/$(dirname ${file#/gcl-builds/airflow/dags/})
+        mkdir -p $dest_dir/
+        cp $file $dest_dir/
       done
-    - git diff HEAD
     - git add --all
-    - git status
-    - git commit -m "Submodule DAG/$CI_PROJECT_NAME | $CI_COMMIT_MESSAGE"
-    - git push origin HEAD:$REPO_BRANCH
+    - |
+      if [[ -n $(git status --porcelain) ]]; then
+        git commit -m "$COMMIT_MESSAGE"
+        git show -1 --patch-with-stat --minimal
+        git push origin HEAD:$GIT_BRANCH
+      fi
