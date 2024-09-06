@@ -14,4 +14,4 @@ Continuous Integration and Continuous Delivery with GitLab CI
 
 ## GitLab CI
 
-Use `jds`'s component in your existing `.gitlab-ci.yml` file to implement [Jabar Digital Service's data product](https://gitlab.com/jdsteam/core-data-platform/data-products/template-data-product) deployment to JabarCloud v2 (either in the staging or production environment). Please read more in [CI/CD Catalog](https://gitlab.com/explore/catalog/pipinfitriadi/ci-cd).
+Use `jds`'s component in your existing _`.gitlab-ci.yml`_ file to implement [Jabar Digital Service's data product](https://gitlab.com/jdsteam/core-data-platform/data-products/template-data-product) deployment to JabarCloud v1 or JabarCloud v2 (either in the staging or production environment). Please read more in [CI/CD Catalog](https://gitlab.com/explore/catalog/pipinfitriadi/ci-cd).
