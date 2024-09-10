@@ -13,7 +13,7 @@ Ensure Job Added:
   script:
     - |
       route="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs"
-      count=`curl --silent "$route" | jq 'map(select(.name | contains("CI/CD Catalog"))) | length'`
+      count=`curl --silent "$route" | jq 'map(select(.name | contains("Ensure Job Added"))) | length'`
       if [ "$count" != "1" ]; then
         exit 1; else
         echo "Component Job present"
