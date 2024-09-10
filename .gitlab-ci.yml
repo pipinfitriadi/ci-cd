@@ -4,9 +4,27 @@
 # Proprietary and confidential
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
-stages:
-  - Release
-
+include:
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/jds@$CI_COMMIT_SHA
+stages: [Test, Release, Deploy]
+Ensure Job Added:
+  stage: Test
+  image: badouralix/curl-jq
+  script:
+    - |
+      route="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs"
+      count=`curl --silent "$route" | jq 'map(select(.name | contains("CI/CD Catalog"))) | length'`
+      if [ "$count" != "1" ]; then
+        exit 1; else
+        echo "Component Job present"
+      fi
+    # - |
+    #   route=https://gitlab.com/api/v4/projects/61204183/pipelines/1439641712/jobs
+    #   count=`curl --silent "$route" | jq 'map(select(.name | contains("CI/CD Catalog"))) | length'`
+    #   if [ "$count" != "1" ]; then
+    #     exit 1; else
+    #     echo "Component Job present"
+    #   fi
 CI/CD Catalog:
   stage: Release
   rules:
