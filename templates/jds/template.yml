@@ -14,8 +14,20 @@ spec:
         - JabarCloud-v2
 ---
 include:
-  - local: templates/infra-provider/$[[ inputs.infra-provider ]].yml
+  - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
 stages: [Test, Deploy]
+.airflow-rules:
+  rules:
+    - exists:
+        - airflow/dags/**/dag_*.py
+      changes:
+        - airflow/dags/**/dag_*.py
+      if: |
+        $CI_COMMIT_BRANCH == 'main' ||
+        (
+          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
+          $CI_COMMIT_BRANCH == 'develop'
+        )
 Code Quality:
   stage: Test
   rules:
@@ -31,17 +43,8 @@ Code Quality:
     - flake8
 Dags Import Check:
   stage: Test
-  rules:
-    - exists:
-        - airflow/dags/**/dag_*.py
-      changes:
-        - airflow/dags/**/dag_*.py
-      if: |
-        $CI_COMMIT_BRANCH == 'main' ||
-        (
-          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
-          $CI_COMMIT_BRANCH == 'develop'
-        )
+  extends:
+    - .airflow-rules
   image:
     name: apache/airflow:slim-$AIRFLOW_VERSION-python3.8
     entrypoint: ['']
@@ -56,22 +59,14 @@ Dags Import Check:
 Dags Deploy:
   stage: Deploy
   needs: [Dags Import Check]
-  rules:
-    - exists:
-        - airflow/dags/**/dag_*.py
-      changes:
-        - airflow/dags/**/dag_*.py
-      if: |
-        $CI_COMMIT_BRANCH == 'main' ||
-        (
-          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
-          $CI_COMMIT_BRANCH == 'develop'
-        )
+  extends:
+    - .airflow-rules
   image: bitnami/git:2.36.1
   variables:
     GIT_LFS_SKIP_SMUDGE: 1
   before_script:
     - COMMIT_MESSAGE=$(git show $CI_COMMIT_SHA --pretty=format:"%s%nCommit Origin":" $(git remote get-url origin | sed 's/\.git$//')/-/commit/%h" --no-patch)
+    - if [[ "$[[ inputs.infra-provider ]]" == 'JabarCloud-v1' ]]; then DAG_PARENT_DIR=DAG/; else DAG_PARENT_DIR=; fi
     - git config --global user.email $(git show $CI_COMMIT_SHA --pretty=format:'%ae' --no-patch)
     - git config --global user.name $(git show $CI_COMMIT_SHA --pretty=format:'%an' --no-patch)
     - git config --global url.https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com.insteadOf https://gitlab.com
@@ -79,16 +74,16 @@ Dags Deploy:
     - cd /tmp/repo/
   script:
     - |
-      if [ $(git submodule--helper list | awk '{print $4}' | grep DAG/$CI_PROJECT_NAME) ]; then
-        git submodule update --init -- DAG/$CI_PROJECT_NAME
-        git submodule deinit -f -- DAG/$CI_PROJECT_NAME
-        git rm -f DAG/$CI_PROJECT_NAME
-        rm -rf .git/modules/DAG/$CI_PROJECT_NAME/
+      if [ $(git submodule--helper list | awk '{print $4}' | grep $DAG_PARENT_DIR$CI_PROJECT_NAME) ]; then
+        git submodule update --init -- $DAG_PARENT_DIR$CI_PROJECT_NAME
+        git submodule deinit -f -- $DAG_PARENT_DIR$CI_PROJECT_NAME
+        git rm -f $DAG_PARENT_DIR$CI_PROJECT_NAME
+        rm -rf .git/modules/$DAG_PARENT_DIR$CI_PROJECT_NAME/
       fi
-    - rm -rf DAG/$CI_PROJECT_NAME/
+    - rm -rf $DAG_PARENT_DIR$CI_PROJECT_NAME/
     - |
       find /gcl-builds/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
-        dest_dir=DAG/$CI_PROJECT_NAME/$(dirname ${file#/gcl-builds/airflow/dags/})
+        dest_dir=$DAG_PARENT_DIR$CI_PROJECT_NAME/$(dirname ${file#/gcl-builds/airflow/dags/})
         mkdir -p $dest_dir/
         cp $file $dest_dir/
       done

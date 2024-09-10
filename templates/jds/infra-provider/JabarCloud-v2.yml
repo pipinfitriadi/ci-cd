@@ -6,5 +6,5 @@
 
 variables:
   AIRFLOW_VERSION: 2.8.3
-  GIT_REPO: https://gitlab.com/jdsteam/core-data-platform/data-pipeline.git
+  GIT_REPO: https://gitlab.com/jdsteam/core-data-platform/airflow-data-pipelines.git
   GIT_BRANCH: $CI_COMMIT_BRANCH
