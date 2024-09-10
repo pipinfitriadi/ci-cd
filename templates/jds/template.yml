@@ -7,7 +7,7 @@
 spec:
   inputs:
     infra-provider:
-      description: Choose target infrastructure provider for deployment
+      description: 'Choose target infrastructure provider for deployment. Available options: `JabarCloud-v1`, `JabarCloud-v2`.'
       default: JabarCloud-v1
       options:
         - JabarCloud-v1
