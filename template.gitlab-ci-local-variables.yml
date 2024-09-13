@@ -5,6 +5,10 @@
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 12 September 2024
 
 ---
+CI_REGISTRY:
+CI_REGISTRY_USER:
+CI_REGISTRY_PASSWORD:
+CI_REGISTRY_IMAGE:
 GITLAB_EMAIL:
 GITLAB_USERNAME:
 GITLAB_PASSWORD:
