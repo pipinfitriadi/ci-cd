@@ -119,6 +119,7 @@ Docker:
   script:
     - docker compose pull || true
     - docker compose build
+    - docker builder prune
     - docker compose push
   after_script:
     - apk add --no-cache curl
