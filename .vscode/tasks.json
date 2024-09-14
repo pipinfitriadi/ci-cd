@@ -9,9 +9,9 @@
     },
     "tasks": [
         {
-            "label": "gitlab-ci-local: Symlink templates/",
+            "label": "gitlab-ci-local: Symlink",
             "type": "shell",
-            "command": "if LINK_TARGET_DIR_FULLPATH=$(readlink -f ${workspaceFolder}/../../$LINK_TARGET_DIR) && [ ! -L $LINK_TARGET_DIR_FULLPATH/templates ]; then ln -s ${workspaceFolder}/templates/ $LINK_TARGET_DIR_FULLPATH/; fi"
+            "command": "LINK_TARGET_DIR_FULLPATH=$(readlink -f ${workspaceFolder}/../../$LINK_TARGET_DIR) && if [ ! -L $LINK_TARGET_DIR_FULLPATH/templates ]; then ln -s ${workspaceFolder}/templates/ $LINK_TARGET_DIR_FULLPATH/; fi && if [ ! -L $LINK_TARGET_DIR_FULLPATH/.gitlab-ci-local-variables.yml ]; then ln -s ${workspaceFolder}/.gitlab-ci-local-variables.yml $LINK_TARGET_DIR_FULLPATH/; fi"
         },
         {
             "label": "gitlab-ci-local: Preparation",
@@ -22,7 +22,7 @@
             "label": "gitlab-ci-local: Run",
             "dependsOrder": "sequence",
             "dependsOn": [
-                "gitlab-ci-local: Symlink templates/",
+                "gitlab-ci-local: Symlink",
                 "gitlab-ci-local: Preparation"
             ],
             "type": "shell",
