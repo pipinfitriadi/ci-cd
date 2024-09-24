@@ -121,8 +121,7 @@ Docker:
     - docker compose build
     - docker compose push
   release:
-    # tag_name: $CI_COMMIT_SHORT_SHA
-    ref: $CI_COMMIT_SHORT_SHA
+    name: Release $CI_COMMIT_SHORT_SHA
     description: |
       ```sh
       docker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG
