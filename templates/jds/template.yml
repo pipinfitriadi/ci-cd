@@ -63,8 +63,8 @@ Dags Check:
 Docker:
   stage: Release
   # needs: [Code Quality]
-  extends:
-    - .jds-rules
+  # extends:
+  #   - .jds-rules
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
