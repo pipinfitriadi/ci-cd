@@ -123,7 +123,7 @@ Docker:
   after_script:
     - apk add --no-cache curl
     - |
-      curl --header 'Content-Type: application/json' --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+      curl --header 'Content-Type: application/json' --header "JOB-TOKEN: $CI_JOB_TOKEN" \
       --data '{ "tag_name": "harbor.$IMAGE_TAG.$CI_COMMIT_SHORT_SHA", "ref": "$CI_COMMIT_SHORT_SHA", "description": "```sh\ndocker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG\n```", "assets": { "links": [{ "link_type": "image", "name": "Harbor", "url": "https://$HARBOR_REGISTRY/harbor/projects/29/repositories/$CI_PROJECT_NAME/artifacts/$(docker images --no-trunc --quiet $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG)" }] } }' \
       --request POST "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
 Dags Deploy:
