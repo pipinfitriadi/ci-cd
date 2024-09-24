@@ -63,8 +63,8 @@ Dags Check:
 Docker:
   stage: Release
   # needs: [Code Quality]
-  # extends:
-  #   - .jds-rules
+  extends:
+    - .jds-rules
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
@@ -120,6 +120,10 @@ Docker:
     - docker compose pull || true
     - docker compose build
     - docker compose push
+Release Image:
+  stage: Release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script: echo 1231
   release:
     tag_name: Release Docker at $CI_COMMIT_SHORT_SHA
     name: Release $CI_COMMIT_SHORT_SHA
