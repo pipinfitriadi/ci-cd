@@ -120,6 +120,7 @@ Docker:
     # - docker compose pull || true
     # - docker compose build
     # - docker compose push
+    - echo 1
     - apk add --no-cache curl
     - |
       curl --header 'Content-Type: application/json' --header "JOB-TOKEN: $CI_JOB_TOKEN" \
