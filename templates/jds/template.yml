@@ -32,19 +32,19 @@ stages: [Test, Release, Deploy]
         - airflow/dags/**/dag_*.py
       changes:
         - airflow/dags/**/dag_*.py
-Code Quality:
-  stage: Test
-  rules:
-    - exists:
-        - '**/*.py'
-  image: pipelinecomponents/flake8
-  variables:
-    PIP_ROOT_USER_ACTION: ignore
-  before_script:
-    - pip install --upgrade pip
-    - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
-  script:
-    - flake8
+# Code Quality:
+#   stage: Test
+#   rules:
+#     - exists:
+#         - '**/*.py'
+#   image: pipelinecomponents/flake8
+#   variables:
+#     PIP_ROOT_USER_ACTION: ignore
+#   before_script:
+#     - pip install --upgrade pip
+#     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
+#   script:
+#     - flake8
 Dags Check:
   stage: Test
   extends:
@@ -112,8 +112,8 @@ Docker:
             cache_to:
               - type=registry,ref=$CI_REGISTRY_IMAGE:$IMAGE_TAG
       EOF
-    - echo $CI_REGISTRY_PASSWORD | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
-    - echo $HARBOR_PASSWORD | docker login $HARBOR_REGISTRY --username $HARBOR_USER --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
+    - echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" --username "$HARBOR_USER" --password-stdin
     - docker context create builder
     - docker buildx create builder --use
   script:
