@@ -62,9 +62,9 @@ Dags Check:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
 Docker:
   stage: Release
-  needs: [Code Quality]
-  extends:
-    - .jds-rules
+  # needs: [Code Quality]
+  # extends:
+  #   - .jds-rules
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
@@ -120,9 +120,18 @@ Docker:
     - docker compose pull || true
     - docker compose build
     - docker compose push
-  after_script:
-    - apk add --no-cache curl
-    - curl -X GET -u $HARBOR_USER:$HARBOR_PASSWORD https://$HARBOR_REGISTRY/v2/data-pipeline/$CI_PROJECT_NAME/tags/list  
+  release:
+    # tag_name: $CI_COMMIT_SHORT_SHA
+    ref: $CI_COMMIT_SHORT_SHA
+    description: |
+      ```sh
+      docker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG
+      ```
+    assets:
+      links:
+        - link_type: image
+          name: 'Harbor'
+          url: 'https://$HARBOR_REGISTRY/harbor/projects/29/repositories/$CI_PROJECT_NAME/artifacts/$(docker images --no-trunc --quiet $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG)'
 Dags Deploy:
   stage: Deploy
   needs: [Dags Check]
