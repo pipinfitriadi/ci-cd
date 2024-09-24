@@ -32,19 +32,19 @@ stages: [Test, Release, Deploy]
         - airflow/dags/**/dag_*.py
       changes:
         - airflow/dags/**/dag_*.py
-# Code Quality:
-#   stage: Test
-#   rules:
-#     - exists:
-#         - '**/*.py'
-#   image: pipelinecomponents/flake8
-#   variables:
-#     PIP_ROOT_USER_ACTION: ignore
-#   before_script:
-#     - pip install --upgrade pip
-#     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
-#   script:
-#     - flake8
+Code Quality:
+  stage: Test
+  rules:
+    - exists:
+        - '**/*.py'
+  image: pipelinecomponents/flake8
+  variables:
+    PIP_ROOT_USER_ACTION: ignore
+  before_script:
+    - pip install --upgrade pip
+    - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
+  script:
+    - flake8
 Dags Check:
   stage: Test
   extends:
@@ -62,9 +62,9 @@ Dags Check:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
 Docker:
   stage: Release
-  # needs: [Code Quality]
-  # extends:
-  #   - .jds-rules
+  needs: [Code Quality]
+  extends:
+    - .jds-rules
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
@@ -123,7 +123,7 @@ Docker:
     - apk add --no-cache curl
     - |
       curl --header 'Content-Type: application/json' --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-      --data "{ \"tag_name\": \"harbor.$IMAGE_TAG.$CI_COMMIT_SHORT_SHA\", \"ref\": \"$CI_COMMIT_SHA\", \"description\": \"\`\`\`sh\\ndocker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG\\n\`\`\`\", \"assets\": { \"links\": [{ \"link_type\": \"image\", \"name\": \"Harbor\", \"url\": \"https://$HARBOR_REGISTRY/harbor/projects/29/repositories/$CI_PROJECT_NAME/artifacts/$(docker images --no-trunc --quiet $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG)\" }] } }" \
+      --data "{ \"name\": \"Harbor's image ($IMAGE_TAG)\", \"tag_name\": \"harbor.$IMAGE_TAG.$CI_COMMIT_SHORT_SHA\", \"ref\": \"$CI_COMMIT_SHA\", \"description\": \"\`\`\`sh\\ndocker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG\\n\`\`\`\", \"assets\": { \"links\": [{ \"link_type\": \"image\", \"name\": \"Harbor\", \"url\": \"https://$HARBOR_REGISTRY/harbor/projects/29/repositories/$CI_PROJECT_NAME\" }] } }" \
       --request POST "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
 Dags Deploy:
   stage: Deploy
