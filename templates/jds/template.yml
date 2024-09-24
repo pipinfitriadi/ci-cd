@@ -121,6 +121,7 @@ Docker:
     - docker compose build
     - docker compose push
   release:
+    tag_name: Release Docker at $CI_COMMIT_SHORT_SHA
     name: Release $CI_COMMIT_SHORT_SHA
     description: |
       ```sh
