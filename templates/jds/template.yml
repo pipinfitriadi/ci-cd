@@ -90,17 +90,17 @@ Docker:
       ENV PYTHONPATH=$PYTHONPATH:/opt/venv/
       COPY --from=python:3.8-slim-bookworm /usr/local/lib/ /usr/local/lib/
       COPY --from=python:3.8-slim-bookworm /usr/local/bin/python3.8 /usr/local/bin/python3.8
-      ENTRYPOINT ["python3.8", "-m", "app"]
+      ENTRYPOINT ["python3.8", "-m", "dataproduct"]
       CMD ["--help"]
       COPY --from=venv /opt/venv/ /opt/venv/
-      COPY LICENSE app/ app/
+      COPY LICENSE src/ dataproduct/
       EOF
     - |
       BUILD_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
       IMAGE_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
       cat <<EOF > docker-compose.yaml
       services:
-        app:
+        dataproduct:
           platform: linux/amd64
           image: $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG
           build:
