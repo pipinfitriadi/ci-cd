@@ -78,11 +78,19 @@ Docker:
 
       FROM python:3.8-slim-bookworm AS venv
       LABEL maintainer=pipinfitriadi@gmail.com
-      COPY requirements.txt /tmp/
       RUN pip install \
               --root-user-action=ignore \
               --no-cache-dir \
+              toml
+      COPY pyproject.toml requirements.txt /tmp/
+      RUN python \
+              -c 'import toml; c = toml.load("/tmp/pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' \
+              > /tmp/package-requirements.txt && \
+          pip install \
+              --root-user-action=ignore \
+              --no-cache-dir \
               --target=/opt/venv/ \
+              -r /tmp/package-requirements.txt \
               -r /tmp/requirements.txt
 
       FROM gcr.io/distroless/python3-debian12:$TAG AS final
