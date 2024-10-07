@@ -63,7 +63,7 @@ Code Coverage:
   script:
     - coverage run -m unittest
     - coverage report -m
-  coverage: /TOTAL.*? (100(?:\.0+)?\%\|[1-9]?\d(?:\.\d+)?\%)$/
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
 Dags Check:
   stage: Test
   extends:
