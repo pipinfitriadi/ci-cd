@@ -63,7 +63,12 @@ Code Coverage:
   script:
     - coverage run -m unittest
     - coverage report -m
-  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+    - coverage xml
+  coverage: /TOTAL.*? (100(?:\.0+)?\%\|[1-9]?\d(?:\.\d+)?\%)$/
+  artifacts:
+    when: always
+    reports:
+      junit: coverage.xml
 Dags Check:
   stage: Test
   extends:
