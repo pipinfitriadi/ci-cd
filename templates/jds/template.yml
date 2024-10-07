@@ -45,6 +45,25 @@ Code Quality:
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
+Code Coverage:
+  stage: Test
+  # extends:
+  #   - .jds-rules
+  rules:
+    - exists:
+        - '**/*.py'
+  image: python:3.8-slim-bookworm
+  variables:
+    PIP_ROOT_USER_ACTION: ignore
+  before_script:
+    - pip install --upgrade pip
+    - pip install coverage httpx toml
+    - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
+    - pip install -r /tmp/package-requirements.txt -r requirements.txt
+  script:
+    - coverage run -m unittest
+    - coverage report -m
+  coverage: /TOTAL.*? (100(?:\.0+)?\%\|[1-9]?\d(?:\.\d+)?\%)$/
 Dags Check:
   stage: Test
   extends:
@@ -62,7 +81,7 @@ Dags Check:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
 Docker:
   stage: Release
-  needs: [Code Quality]
+  needs: [Code Quality, Code Coverage]
   extends:
     - .jds-rules
   image: docker:24.0.5
@@ -78,8 +97,12 @@ Docker:
 
       FROM python:3.8-slim-bookworm AS venv
       LABEL maintainer=pipinfitriadi@gmail.com
+      ENV PIP_ROOT_USER_ACTION=ignore
       RUN pip install \
-              --root-user-action=ignore \
+              --no-cache-dir \
+              --upgrade \
+              pip \
+          pip install \
               --no-cache-dir \
               toml
       COPY pyproject.toml requirements.txt /tmp/
@@ -87,7 +110,6 @@ Docker:
               -c 'import toml; c = toml.load("/tmp/pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' \
               > /tmp/package-requirements.txt && \
           pip install \
-              --root-user-action=ignore \
               --no-cache-dir \
               --target=/opt/venv/ \
               -r /tmp/package-requirements.txt \
