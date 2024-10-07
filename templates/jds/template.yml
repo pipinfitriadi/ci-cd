@@ -57,19 +57,17 @@ Code Coverage:
     PIP_ROOT_USER_ACTION: ignore
   before_script:
     - pip install --upgrade pip
-    - pip install coverage httpx toml
+    - pip install coverage httpx toml unittest-xml-reporting
     - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
   script:
-    - coverage run -m unittest
+    - coverage run -m xmlrunner --output-file unittest-report.xml
     - coverage report
-    - coverage xml
   coverage: /TOTAL.*\s+(\d+%)/
   artifacts:
+    when: always
     reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
+      junit: unittest-report.xml
 Dags Check:
   stage: Test
   extends:
