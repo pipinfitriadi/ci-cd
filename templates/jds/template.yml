@@ -63,7 +63,13 @@ Code Coverage:
   script:
     - coverage run -m unittest
     - coverage report
+    - coverage xml
   coverage: /TOTAL.*\s+(\d+%)/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 Dags Check:
   stage: Test
   extends:
