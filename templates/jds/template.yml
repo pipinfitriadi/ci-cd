@@ -62,16 +62,11 @@ Code Coverage:
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
   script:
     - coverage run -m unittest
-    - coverage report -m
+    - coverage report
     - coverage xml
   coverage: /TOTAL.*? (100(?:\.0+)?\%\|[1-9]?\d(?:\.\d+)?\%)$/
   artifacts:
-    when: always
-    # reports:
-    #   junit: coverage.xml
-    coverage_report:
-      coverage_format: cobertura
-      path: coverage.xml
+    paths: [coverage.xml]
 Dags Check:
   stage: Test
   extends:
