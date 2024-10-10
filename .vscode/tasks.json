@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "LINK_TARGET_DIR": "JDS/template-data-product",
+            "GITLAB_CI_LOCAL_CWD": "../../JDS/template-data-product/",
+            "GITLAB_CI_LOCAL_STATE_DIR": "../../Pribadi/${workspaceFolderBasename}/.gitlab-ci-local/"
+        }
+    },
+    "tasks": [
+        {
+            "label": "gitlab-ci-local: Symlink",
+            "type": "shell",
+            "command": "LINK_TARGET_DIR_FULLPATH=$(readlink -f ${workspaceFolder}/../../$LINK_TARGET_DIR) && if [ ! -L $LINK_TARGET_DIR_FULLPATH/templates ]; then ln -s ${workspaceFolder}/templates/ $LINK_TARGET_DIR_FULLPATH/; fi && if [ ! -L $LINK_TARGET_DIR_FULLPATH/.gitlab-ci-local-variables.yml ]; then ln -s ${workspaceFolder}/.gitlab-ci-local-variables.yml $LINK_TARGET_DIR_FULLPATH/; fi"
+        },
+        {
+            "label": "gitlab-ci-local: Preparation",
+            "type": "shell",
+            "command": "if [[ $(which gitlab-ci-local) == 'gitlab-ci-local not found' ]]; then brew install gitlab-ci-local; else echo 'Repository: https://github.com/firecow/gitlab-ci-local'; fi"
+        },
+        {
+            "label": "gitlab-ci-local: Run",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "gitlab-ci-local: Symlink",
+                "gitlab-ci-local: Preparation"
+            ],
+            "type": "shell",
+            "command": "gitlab-ci-local --privileged --ulimit 8000:16000 --volume certs:/certs/client --variable DOCKER_TLS_CERTDIR=/certs --cwd $GITLAB_CI_LOCAL_CWD --state-dir $GITLAB_CI_LOCAL_STATE_DIR && sleep 1 && if DOCKER_VOLUMES=$(docker volume ls -qf dangling=true) && [[ $DOCKER_VOLUMES ]]; then docker volume rm $(echo $DOCKER_VOLUMES); fi && if DOCKER_NETWORKS=$(docker network ls -qf dangling=true) && [[ $DOCKER_NETWORKS ]]; then docker network rm $(echo $DOCKER_NETWORKS); fi"
+        }
+    ]
+}
