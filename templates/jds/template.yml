@@ -107,11 +107,17 @@ Docker:
 
       FROM python:3.8-slim-bookworm AS venv
       LABEL maintainer=pipinfitriadi@gmail.com
+      ENV DEBIAN_FRONTEND=noninteractive
+      ENV DEBCONF_NOWARNINGS=yes
       ENV PIP_ROOT_USER_ACTION=ignore
-      RUN pip install \
+      RUN --mount=type=cache,target=/var/cache/apt \
+          apt-get update && \
+          apt-get install -y \
+              git && \
+          pip install \
               --no-cache-dir \
               --upgrade \
-              pip \
+              pip && \
           pip install \
               --no-cache-dir \
               toml
@@ -125,15 +131,24 @@ Docker:
               -r /tmp/package-requirements.txt \
               -r /tmp/requirements.txt
 
+      FROM venv AS package
+      LABEL maintainer=pipinfitriadi@gmail.com
+      COPY . /tmp/repo/
+      RUN pip install \
+              --no-cache-dir \
+              --target=/opt/venv/ \
+              --no-deps \
+              --upgrade \
+              git+file:/tmp/repo/
+
       FROM gcr.io/distroless/python3-debian12:$TAG AS final
       LABEL maintainer=pipinfitriadi@gmail.com
       ENV PYTHONPATH=$PYTHONPATH:/opt/venv/
       COPY --from=python:3.8-slim-bookworm /usr/local/lib/ /usr/local/lib/
       COPY --from=python:3.8-slim-bookworm /usr/local/bin/python3.8 /usr/local/bin/python3.8
-      ENTRYPOINT ["python3.8", "-m", "dataproduct"]
+      ENTRYPOINT ["/opt/venv/bin/dataproduct"]
       CMD ["--help"]
-      COPY --from=venv /opt/venv/ /opt/venv/
-      COPY LICENSE src/ dataproduct/
+      COPY --from=package /opt/venv/ /opt/venv/
       EOF
     - |
       BUILD_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
@@ -165,6 +180,9 @@ Docker:
       curl --header 'Content-Type: application/json' --header "JOB-TOKEN: $CI_JOB_TOKEN" \
       --data "{ \"name\": \"Harbor's image ($IMAGE_TAG)\", \"tag_name\": \"harbor.$IMAGE_TAG.$CI_COMMIT_SHORT_SHA\", \"ref\": \"$CI_COMMIT_SHA\", \"description\": \"\`\`\`sh\\ndocker pull $HARBOR_REGISTRY/data-pipeline/$CI_PROJECT_NAME:$IMAGE_TAG\\n\`\`\`\", \"assets\": { \"links\": [{ \"link_type\": \"image\", \"name\": \"Harbor\", \"url\": \"https://$HARBOR_REGISTRY/harbor/projects/29/repositories/$CI_PROJECT_NAME\" }] } }" \
       --request POST "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
+  after_script:
+    - docker logout "$CI_REGISTRY"
+    - docker logout "$HARBOR_REGISTRY"
 Dags Deploy:
   stage: Deploy
   needs: [Dags Check]
