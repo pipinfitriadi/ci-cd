@@ -40,6 +40,16 @@ stages: [Test, Release, Deploy]
           "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
           $CI_COMMIT_BRANCH == 'develop'
         )
+      exists:
+        - src/**/*
+        - tests/**/*
+        - pyproject.toml
+        - requirements.txt
+      changes:
+        - src/**/*
+        - tests/**/*
+        - pyproject.toml
+        - requirements.txt
 Code Quality:
   stage: Test
   rules:
