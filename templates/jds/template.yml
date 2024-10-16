@@ -195,7 +195,7 @@ Docker:
     - docker logout "$HARBOR_REGISTRY"
 Dags Deploy:
   stage: Deploy
-  needs: [Dags Check]
+  needs: [Code Quality, Dags Check]
   extends:
     - .airflow-rules
   image: bitnami/git:2.36.1
