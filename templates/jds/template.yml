@@ -161,8 +161,8 @@ Docker:
       COPY --from=package /opt/venv/ /opt/venv/
       EOF
     - |
-      BUILD_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
-      IMAGE_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
+      BUILD_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
+      IMAGE_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
       cat <<EOF > docker-compose.yaml
       services:
         dataproduct:
