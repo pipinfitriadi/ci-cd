@@ -84,7 +84,7 @@ Code Coverage:
     when: always
     reports:
       junit: unittest-report.xml
-Dags Check:
+DAGs Check:
   stage: Test
   extends:
     - .airflow-rules
@@ -161,8 +161,8 @@ Docker:
       COPY --from=package /opt/venv/ /opt/venv/
       EOF
     - |
-      BUILD_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
-      IMAGE_TAG=$(if [[ $GIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
+      BUILD_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
+      IMAGE_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
       cat <<EOF > docker-compose.yaml
       services:
         dataproduct:
@@ -193,9 +193,9 @@ Docker:
   after_script:
     - docker logout "$CI_REGISTRY"
     - docker logout "$HARBOR_REGISTRY"
-Dags Deploy:
+DAGs Deploy:
   stage: Deploy
-  needs: [Code Quality, Dags Check]
+  needs: [Code Quality, DAGs Check]
   extends:
     - .airflow-rules
   image: bitnami/git:2.36.1
