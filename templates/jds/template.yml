@@ -203,7 +203,7 @@ DAGs Deploy:
   variables:
     GIT_LFS_SKIP_SMUDGE: 1
   before_script:
-    - COMMIT_MESSAGE=$(git show $CI_COMMIT_SHA --pretty=format:"%s%nCommit Origin":" $(git remote get-url origin | sed 's/\.git$//')/-/commit/%h" --no-patch)
+    - COMMIT_MESSAGE=$(git show $CI_COMMIT_SHA --pretty=format:"%s%nCommit Origin":" $(git remote get-url origin | sed -E 's#https://[^@]+@#https://#; s/\.git$//')/-/commit/%h" --no-patch)
     - if [[ "$[[ inputs.infra-provider ]]" == 'JabarCloud-v1' ]]; then DAG_PARENT_DIR=DAG/; else DAG_PARENT_DIR=; fi
     - git config --global user.email $(git show $CI_COMMIT_SHA --pretty=format:'%ae' --no-patch)
     - git config --global user.name $(git show $CI_COMMIT_SHA --pretty=format:'%an' --no-patch)
