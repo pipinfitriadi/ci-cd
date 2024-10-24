@@ -209,6 +209,7 @@ DAGs Deploy:
     - git config --global user.name $(git show $CI_COMMIT_SHA --pretty=format:'%an' --no-patch)
     - git config --global url.https://$GITLAB_USERNAME:$GITLAB_PASSWORD@gitlab.com.insteadOf https://gitlab.com
     - git clone --depth 1 $GIT_REPO /tmp/repo/ --single-branch --branch $GIT_BRANCH
+    - repo_dir=$(PWD)
     - cd /tmp/repo/
   script:
     - |
@@ -220,8 +221,8 @@ DAGs Deploy:
       fi
     - rm -rf $DAG_PARENT_DIR$CI_PROJECT_NAME/
     - |
-      find $(pwd)/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
-        dest_dir=$DAG_PARENT_DIR$CI_PROJECT_NAME/$(dirname ${file#$(pwd)/airflow/dags/})
+      find $repo_dir/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
+        dest_dir=$DAG_PARENT_DIR$CI_PROJECT_NAME/$(dirname ${file#$repo_dir/airflow/dags/})
         mkdir -p $dest_dir/
         cp $file $dest_dir/
       done
