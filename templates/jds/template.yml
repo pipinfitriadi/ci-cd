@@ -58,8 +58,8 @@ Code Quality:
   image: pipelinecomponents/flake8
   variables:
     PIP_ROOT_USER_ACTION: ignore
+    PIP_DISABLE_PIP_VERSION_CHECK: 1
   before_script:
-    - pip install --upgrade pip
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
@@ -70,8 +70,8 @@ Code Coverage:
   image: python:3.8-slim-bookworm
   variables:
     PIP_ROOT_USER_ACTION: ignore
+    PIP_DISABLE_PIP_VERSION_CHECK: 1
   before_script:
-    - pip install --upgrade pip
     - pip install coverage toml unittest-xml-reporting
     - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
@@ -120,6 +120,7 @@ Docker:
       ENV DEBIAN_FRONTEND=noninteractive
       ENV DEBCONF_NOWARNINGS=yes
       ENV PIP_ROOT_USER_ACTION=ignore
+      ENV PIP_DISABLE_PIP_VERSION_CHECK=1
       RUN --mount=type=cache,target=/var/cache/apt \
           apt-get update && \
           apt-get install -y \
@@ -127,7 +128,7 @@ Docker:
           pip install \
               --no-cache-dir \
               --upgrade \
-              pip && \
+              pip==21.2.4 && \
           pip install \
               --no-cache-dir \
               toml
