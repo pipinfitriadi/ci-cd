@@ -220,8 +220,8 @@ DAGs Deploy:
       fi
     - rm -rf $DAG_PARENT_DIR$CI_PROJECT_NAME/
     - |
-      find /gcl-builds/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
-        dest_dir=$DAG_PARENT_DIR$CI_PROJECT_NAME/$(dirname ${file#/gcl-builds/airflow/dags/})
+      find $(pwd)/airflow/dags/ -type f ! -name 'example.py' ! -name 'branch_example.py' -print0 | while IFS= read -r -d '' file; do
+        dest_dir=$DAG_PARENT_DIR$CI_PROJECT_NAME/$(dirname ${file#$(pwd)/airflow/dags/})
         mkdir -p $dest_dir/
         cp $file $dest_dir/
       done
