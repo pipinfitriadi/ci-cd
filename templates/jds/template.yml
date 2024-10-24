@@ -53,8 +53,8 @@ stages: [Test, Release, Deploy]
 Code Quality:
   stage: Test
   rules:
-    - exists:
-        - '**/*.py'
+    - exists: ['**/*.py']
+      changes: ['**/*.py']
   image: pipelinecomponents/flake8
   variables:
     PIP_ROOT_USER_ACTION: ignore
