@@ -95,7 +95,10 @@ DAGs Check:
       user: airflow
   variables:
     AIRFLOW__CORE__DAGS_FOLDER: airflow/dags/
+    PIP_ROOT_USER_ACTION: ignore
+    PIP_DISABLE_PIP_VERSION_CHECK: 1
   before_script:
+    - pip install kubernetes
     - airflow db init
   script:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
