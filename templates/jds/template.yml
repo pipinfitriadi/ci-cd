@@ -16,6 +16,12 @@ spec:
       options:
         - JabarCloud-v1
         - JabarCloud-v2
+    dags-check-dependencies:
+      description: Add python dependencies for Gitlab CI job DAGs Check
+      type: array
+      default:
+        - kubernetes
+        - apache-airflow-providers-cncf-kubernetes
 ---
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
@@ -98,7 +104,7 @@ DAGs Check:
     PIP_ROOT_USER_ACTION: ignore
     PIP_DISABLE_PIP_VERSION_CHECK: 1
   before_script:
-    - pip install kubernetes apache-airflow-providers-cncf-kubernetes
+    - if DEPENDENCIES=$(echo $[[ inputs.dags-check-dependencies ]] | tr ',' ' ' | tr -d '[]') && [[ $DEPENDENCIES != '' ]]; then pip install $DEPENDENCIES; fi
     - airflow db init
   script:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
