@@ -10,15 +10,15 @@ spec:
       description: Percentage as an integer for passing code coverage
       type: number
       default: 34
+    dags-check-dependencies:
+      description: Add python dependencies for Gitlab CI job DAGs Check
+      default: kubernetes apache-airflow-providers-cncf-kubernetes
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
       default: JabarCloud-v1
       options:
         - JabarCloud-v1
         - JabarCloud-v2
-    dags-check-dependencies:
-      description: Add python dependencies for Gitlab CI job DAGs Check
-      default: kubernetes apache-airflow-providers-cncf-kubernetes
 ---
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
