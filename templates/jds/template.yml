@@ -11,7 +11,7 @@ spec:
       type: number
       default: 34
     dags-check-dependencies:
-      description: Add python dependencies for Gitlab CI job DAGs Check
+      description: Add python dependencies for DAGs Check
       default: kubernetes apache-airflow-providers-cncf-kubernetes
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
