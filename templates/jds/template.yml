@@ -105,6 +105,7 @@ DAGs Check:
     - airflow db init
   script:
     - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
+    - airflow dags list
 Docker:
   stage: Release
   needs: [Code Quality, Code Coverage]
