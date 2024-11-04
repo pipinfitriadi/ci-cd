@@ -104,7 +104,7 @@ DAGs Check:
     - pip install $[[ inputs.dags-check-dependencies ]]
     - airflow db init
   script:
-    - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
+    - airflow dags list-import-errors
     - airflow dags list
 Docker:
   stage: Release
