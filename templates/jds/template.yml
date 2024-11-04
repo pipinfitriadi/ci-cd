@@ -80,7 +80,7 @@ Code Coverage:
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
   script:
     - coverage run -m xmlrunner --output-file unittest-report.xml
-    - coverage report
+    - coverage report -m
     - if [ $(printf '%.0f' $(coverage report | awk '$1 == "TOTAL" {print $NF+0}')) -ge $[[ inputs.codecoverage-percentage-passed ]] ]; then exit; else exit 1; fi
   coverage: /TOTAL.*\s+(\d+%)/
   artifacts:
