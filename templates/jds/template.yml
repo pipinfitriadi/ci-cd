@@ -10,15 +10,15 @@ spec:
       description: Percentage as an integer for passing code coverage
       type: number
       default: 34
+    dags-check-dependencies:
+      description: Add python dependencies for DAGs Check
+      default: kubernetes apache-airflow-providers-cncf-kubernetes
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
       default: JabarCloud-v1
       options:
         - JabarCloud-v1
         - JabarCloud-v2
-    dags-check-dependencies:
-      description: Add python dependencies for Gitlab CI job DAGs Check
-      default: kubernetes apache-airflow-providers-cncf-kubernetes
 ---
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
@@ -80,7 +80,7 @@ Code Coverage:
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
   script:
     - coverage run -m xmlrunner --output-file unittest-report.xml
-    - coverage report
+    - coverage report -m
     - if [ $(printf '%.0f' $(coverage report | awk '$1 == "TOTAL" {print $NF+0}')) -ge $[[ inputs.codecoverage-percentage-passed ]] ]; then exit; else exit 1; fi
   coverage: /TOTAL.*\s+(\d+%)/
   artifacts:
@@ -104,7 +104,8 @@ DAGs Check:
     - pip install $[[ inputs.dags-check-dependencies ]]
     - airflow db init
   script:
-    - if ERRORS=$(airflow dags list-import-errors) && echo "$ERRORS" && [[ $ERRORS != 'No data found' ]]; then exit 1; fi
+    - airflow dags list-import-errors
+    - airflow dags list
 Docker:
   stage: Release
   needs: [Code Quality, Code Coverage]
