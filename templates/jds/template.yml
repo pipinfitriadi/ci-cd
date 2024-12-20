@@ -23,57 +23,48 @@ spec:
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
 stages: [Test, Release, Deploy]
+.branch-if: &branch-if
+  if: |
+    $CI_COMMIT_BRANCH == 'main' ||
+    (
+      "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
+      $CI_COMMIT_BRANCH == 'develop'
+    )
 .airflow-rules:
   rules:
-    - if: |
-        $CI_COMMIT_BRANCH == 'main' ||
-        (
-          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
-          $CI_COMMIT_BRANCH == 'develop'
-        )
-      exists:
-        - airflow/dags/**/dag_*.py
+    - <<: *branch-if
+      exists: [airflow/dags/**/dag_*.py]
       changes:
-        - airflow/dags/**/dag_*.py
+        - !reference [.airflow-rules, rules, 0, exists]
+.pypi-files: &pypi-files
+  - src/**/*
+  - tests/**/*
+  - pyproject.toml
 .jds-rules:
   rules:
-    - if: |
-        $CI_COMMIT_BRANCH == 'main' ||
-        (
-          "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
-          $CI_COMMIT_BRANCH == 'develop'
-        )
-      exists:
-        - src/**/*
-        - tests/**/*
-        - pyproject.toml
-        - requirements.txt
+    - <<: *branch-if
+      exists: [*pypi-files, requirements.txt]
       changes:
-        - src/**/*
-        - tests/**/*
-        - pyproject.toml
-        - requirements.txt
+        - !reference [.jds-rules, rules, 0, exists]
+.pip-variables: &pip-variables
+  PIP_ROOT_USER_ACTION: ignore
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
 Code Quality:
   stage: Test
   rules:
     - exists: ['**/*.py']
       changes: ['**/*.py']
   image: pipelinecomponents/flake8
-  variables:
-    PIP_ROOT_USER_ACTION: ignore
-    PIP_DISABLE_PIP_VERSION_CHECK: 1
+  variables: *pip-variables
   before_script:
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
 Code Coverage:
   stage: Test
-  extends:
-    - .jds-rules
+  extends: [.jds-rules]
   image: python:3.8-slim-bookworm
-  variables:
-    PIP_ROOT_USER_ACTION: ignore
-    PIP_DISABLE_PIP_VERSION_CHECK: 1
+  variables: *pip-variables
   before_script:
     - pip install coverage toml unittest-xml-reporting
     - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
@@ -89,8 +80,7 @@ Code Coverage:
       junit: unittest-report.xml
 DAGs Check:
   stage: Test
-  extends:
-    - .airflow-rules
+  extends: [.airflow-rules]
   image:
     name: apache/airflow:slim-$AIRFLOW_VERSION-python3.8
     entrypoint: ['']
@@ -98,8 +88,7 @@ DAGs Check:
       user: airflow
   variables:
     AIRFLOW__CORE__DAGS_FOLDER: airflow/dags/
-    PIP_ROOT_USER_ACTION: ignore
-    PIP_DISABLE_PIP_VERSION_CHECK: 1
+    <<: *pip-variables
   before_script:
     - pip install $[[ inputs.dags-check-dependencies ]]
     - airflow db init
@@ -109,11 +98,9 @@ DAGs Check:
 Docker:
   stage: Release
   needs: [Code Quality, Code Coverage]
-  extends:
-    - .jds-rules
+  extends: [.jds-rules]
   image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
+  services: [docker:24.0.5-dind]
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: /certs
@@ -204,8 +191,7 @@ Docker:
 DAGs Deploy:
   stage: Deploy
   needs: [Code Quality, DAGs Check]
-  extends:
-    - .airflow-rules
+  extends: [.airflow-rules]
   image: bitnami/git:2.36.1
   variables:
     GIT_LFS_SKIP_SMUDGE: 1
