@@ -97,7 +97,10 @@ DAGs Check:
     - airflow dags list
 Docker:
   stage: Release
-  needs: [Code Quality, Code Coverage]
+  needs:
+    - job: Code Quality
+      optional: true
+    - Code Coverage
   extends: [.jds-rules]
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
@@ -190,7 +193,10 @@ Docker:
     - docker logout "$HARBOR_REGISTRY"
 DAGs Deploy:
   stage: Deploy
-  needs: [Code Quality, DAGs Check]
+  needs:
+    - job: Code Quality
+      optional: true
+    - DAGs Check
   extends: [.airflow-rules]
   image: bitnami/git:2.36.1
   variables:
