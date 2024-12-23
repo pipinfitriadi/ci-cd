@@ -103,7 +103,7 @@ Docker:
     - Code Coverage
   rules:
     - if: $[[ inputs.docker-release ]] && $BRANCH_CONDITION
-      changes: *jds-rules-changes
+      changes: [*jds-rules-changes]
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
   variables:
