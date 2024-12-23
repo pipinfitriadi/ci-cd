@@ -33,9 +33,7 @@ stages: [Test, Release, Deploy]
 .airflow-rules:
   rules:
     - <<: *branch-if
-      exists: [airflow/dags/**/dag_*.py]
-      changes:
-        - !reference [.airflow-rules, rules, 0, exists]
+      changes: [airflow/dags/**/dag_*.py]
 .pypi-files: &pypi-files
   - src/**/*
   - tests/**/*
@@ -43,17 +41,14 @@ stages: [Test, Release, Deploy]
 .jds-rules:
   rules:
     - <<: *branch-if
-      exists: [*pypi-files, requirements.txt]
-      changes:
-        - !reference [.jds-rules, rules, 0, exists]
+      changes: [*pypi-files, requirements.txt]
 .pip-variables: &pip-variables
   PIP_ROOT_USER_ACTION: ignore
   PIP_DISABLE_PIP_VERSION_CHECK: 1
 Code Quality:
   stage: Test
   rules:
-    - exists: ['**/*.py']
-      changes: ['**/*.py']
+    - changes: ['**/*.py']
   image: pipelinecomponents/flake8
   variables: *pip-variables
   before_script:
