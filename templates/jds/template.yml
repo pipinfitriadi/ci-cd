@@ -46,7 +46,7 @@ variables:
   rules:
     - if: $BRANCH_CONDITION
       changes: &jds-rules-changes
-        <<: *pypi-files
+        *pypi-files
         - requirements.txt
 .pip-variables:
   variables:
