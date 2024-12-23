@@ -27,7 +27,7 @@ spec:
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
 stages: [Test, Release, Deploy]
-varibles:
+variables:
   BRANCH_CONDITION: |
     $CI_COMMIT_BRANCH == 'main' ||
     (
