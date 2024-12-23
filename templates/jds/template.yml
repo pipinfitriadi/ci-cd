@@ -103,7 +103,9 @@ Docker:
     - Code Coverage
   rules:
     - if: $[[ inputs.docker-release ]] && $BRANCH_CONDITION
-      changes: [*jds-rules-changes]
+      changes:
+        - *pypi-files
+        - requirements.txt
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
   variables:
