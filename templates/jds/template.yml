@@ -27,8 +27,8 @@ spec:
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
 stages: [Test, Release, Deploy]
-variables:
-  BRANCH_CONDITION: |
+.branch-condition: &branch-condition
+  if: |
     $CI_COMMIT_BRANCH == 'main' ||
     (
       "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
@@ -36,11 +36,11 @@ variables:
     )
 .airflow-rules:
   rules:
-    - if: "$BRANCH_CONDITION"
+    - <<: *branch-condition
       changes: [airflow/dags/**/dag_*.py]
 .jds-rules:
   rules:
-    - if: "$BRANCH_CONDITION"
+    - <<: *branch-condition
       changes: &jds-rules-changes
         - src/**/*
         - tests/**/*
@@ -100,7 +100,15 @@ Docker:
       optional: true
     - Code Coverage
   rules:
-    - if: '"$[[ inputs.docker-release ]]" == "true" && "$BRANCH_CONDITION"'
+    - if: |
+        "$[[ inputs.docker-release ]]" == 'true' &&
+        (
+          $CI_COMMIT_BRANCH == 'main' ||
+          (
+            "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
+            $CI_COMMIT_BRANCH == 'develop'
+          )
+        )
       changes: *jds-rules-changes
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
