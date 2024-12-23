@@ -26,4 +26,5 @@ tus:
     - if: '"$TES" && "true" == "true"'
   script:
     - echo 1
+    - '"$TES" && "true" == "true"'
 
