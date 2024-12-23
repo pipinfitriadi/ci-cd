@@ -23,7 +23,7 @@ tes:
     - echo 2
 tus:
   rules:
-    - if: $TES && true == true
+    - if: '"$TES" && "true" == "true"'
   script:
     - echo 1
 
