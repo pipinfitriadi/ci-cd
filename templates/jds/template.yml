@@ -47,7 +47,7 @@ variables:
     - if: $BRANCH_CONDITION
       changes: &jds-rules-changes
         *pypi-files
-        - requirements.txt
+        # - requirements.txt
 .pip-variables:
   variables:
     PIP_ROOT_USER_ACTION: ignore
