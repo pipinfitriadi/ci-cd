@@ -12,7 +12,11 @@ spec:
       default: 34
     dags-check-dependencies:
       description: Add python dependencies for DAGs Check
-      default: kubernetes apache-airflow-providers-cncf-kubernetes
+      default: kubernetes apache-airflow-providers-cncf-kubernete
+    docker-release:
+      description: Setting to enable or disable the Release Docker CI Job
+      type: boolean
+      default: true
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
       default: JabarCloud-v1
@@ -23,8 +27,8 @@ spec:
 include:
   - local: templates/jds/infra-provider/$[[ inputs.infra-provider ]].yml
 stages: [Test, Release, Deploy]
-.branch-if: &branch-if
-  if: |
+varibles:
+  BRANCH_CONDITION: |
     $CI_COMMIT_BRANCH == 'main' ||
     (
       "$[[ inputs.infra-provider ]]" == 'JabarCloud-v2' &&
@@ -32,7 +36,7 @@ stages: [Test, Release, Deploy]
     )
 .airflow-rules:
   rules:
-    - <<: *branch-if
+    - if: $BRANCH_CONDITION
       changes: [airflow/dags/**/dag_*.py]
 .pypi-files: &pypi-files
   - src/**/*
@@ -40,7 +44,7 @@ stages: [Test, Release, Deploy]
   - pyproject.toml
 .jds-rules:
   rules:
-    - <<: *branch-if
+    - if: $BRANCH_CONDITION
       changes: [*pypi-files, requirements.txt]
 .pip-variables: &pip-variables
   PIP_ROOT_USER_ACTION: ignore
@@ -96,7 +100,9 @@ Docker:
     - job: Code Quality
       optional: true
     - Code Coverage
-  extends: .jds-rules
+  rules:
+    - if: $[[ inputs.docker-release ]] && $BRANCH_CONDITION
+      changes: !reference [.jds-rules, rules, 0, changes]
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
   variables:
