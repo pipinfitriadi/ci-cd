@@ -191,6 +191,27 @@ Docker:
   after_script:
     - docker logout "$CI_REGISTRY"
     - docker logout "$HARBOR_REGISTRY"
+PyPI:
+  stage: Release
+  needs:
+    - job: Code Quality
+      optional: true
+    - Code Coverage
+  extends: .pip-variables
+  rules:
+    - if: $CI_COMMIT_TAG =~ /(?i)\A(?:v?(?:([0-9]+)!)?([0-9]+(?:\.[0-9]+)*)([-_.]?((a|b|c|rc|alpha|beta|pre|preview))[-_.]?([0-9]+)?)?((?:-([0-9]+))|(?:[-_.]?(post|rev|r)[-_.]?([0-9]+)?))?([-_.]?(dev)[-_.]?([0-9]+)?)?(?:\+([a-z0-9]+(?:[-_.][a-z0-9]+)*))?)\z/
+      changes: *pypi-files
+  image: python:3.8-slim-bookworm
+  variables:
+    TWINE_USERNAME: gitlab-ci-token
+    TWINE_PASSWORD: $CI_JOB_TOKEN
+  before_script:
+    - apt-get update
+    - apt-get install -y git
+    - pip install build twine
+  script:
+    - python -m build
+    - twine upload --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
 DAGs Deploy:
   stage: Deploy
   needs:
