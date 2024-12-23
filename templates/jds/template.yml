@@ -36,11 +36,11 @@ variables:
     )
 .airflow-rules:
   rules:
-    - if: $BRANCH_CONDITION
+    - if: "$BRANCH_CONDITION"
       changes: [airflow/dags/**/dag_*.py]
 .jds-rules:
   rules:
-    - if: $BRANCH_CONDITION
+    - if: "$BRANCH_CONDITION"
       changes: &jds-rules-changes
         - src/**/*
         - tests/**/*
@@ -100,7 +100,7 @@ Docker:
       optional: true
     - Code Coverage
   rules:
-    - if: '"$[[ inputs.docker-release ]]" && $BRANCH_CONDITION'
+    - if: '"$[[ inputs.docker-release ]]" == true && "$BRANCH_CONDITION"'
       changes: *jds-rules-changes
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
