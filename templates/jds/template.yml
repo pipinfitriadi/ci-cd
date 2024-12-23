@@ -46,24 +46,24 @@ varibles:
   rules:
     - if: $BRANCH_CONDITION
       changes: [*pypi-files, requirements.txt]
-.pip-variables: &pip-variables
-  PIP_ROOT_USER_ACTION: ignore
-  PIP_DISABLE_PIP_VERSION_CHECK: 1
+.pip-variables:
+  variables:
+    PIP_ROOT_USER_ACTION: ignore
+    PIP_DISABLE_PIP_VERSION_CHECK: 1
 Code Quality:
   stage: Test
+  extends: .pip-variables
   rules:
     - changes: ['**/*.py']
   image: pipelinecomponents/flake8
-  variables: *pip-variables
   before_script:
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
 Code Coverage:
   stage: Test
-  extends: .jds-rules
+  extends: [.jds-rules, .pip-variables]
   image: python:3.8-slim-bookworm
-  variables: *pip-variables
   before_script:
     - pip install coverage toml unittest-xml-reporting
     - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
@@ -79,7 +79,7 @@ Code Coverage:
       junit: unittest-report.xml
 DAGs Check:
   stage: Test
-  extends: .airflow-rules
+  extends: [.airflow-rules, .pip-variables]
   image:
     name: apache/airflow:slim-$AIRFLOW_VERSION-python3.8
     entrypoint: ['']
@@ -87,7 +87,6 @@ DAGs Check:
       user: airflow
   variables:
     AIRFLOW__CORE__DAGS_FOLDER: airflow/dags/
-    <<: *pip-variables
   before_script:
     - pip install $[[ inputs.dags-check-dependencies ]]
     - airflow db init
