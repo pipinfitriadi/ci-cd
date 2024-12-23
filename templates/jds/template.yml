@@ -57,7 +57,7 @@ Code Quality:
     - flake8
 Code Coverage:
   stage: Test
-  extends: [.jds-rules]
+  extends: .jds-rules
   image: python:3.8-slim-bookworm
   variables: *pip-variables
   before_script:
@@ -75,7 +75,7 @@ Code Coverage:
       junit: unittest-report.xml
 DAGs Check:
   stage: Test
-  extends: [.airflow-rules]
+  extends: .airflow-rules
   image:
     name: apache/airflow:slim-$AIRFLOW_VERSION-python3.8
     entrypoint: ['']
@@ -96,7 +96,7 @@ Docker:
     - job: Code Quality
       optional: true
     - Code Coverage
-  extends: [.jds-rules]
+  extends: .jds-rules
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
   variables:
@@ -192,7 +192,7 @@ DAGs Deploy:
     - job: Code Quality
       optional: true
     - DAGs Check
-  extends: [.airflow-rules]
+  extends: .airflow-rules
   image: bitnami/git:2.36.1
   variables:
     GIT_LFS_SKIP_SMUDGE: 1
