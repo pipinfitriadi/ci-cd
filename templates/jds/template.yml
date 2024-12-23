@@ -38,16 +38,14 @@ variables:
   rules:
     - if: $BRANCH_CONDITION
       changes: [airflow/dags/**/dag_*.py]
-.pypi-files: &pypi-files
-  - src/**/*
-  - tests/**/*
-  - pyproject.toml
 .jds-rules:
   rules:
     - if: $BRANCH_CONDITION
       changes: &jds-rules-changes
-        - *pypi-files
-        # - requirements.txt
+        - src/**/*
+        - tests/**/*
+        - pyproject.toml
+        - requirements.txt
 .pip-variables:
   variables:
     PIP_ROOT_USER_ACTION: ignore
@@ -202,7 +200,10 @@ PyPI:
   extends: .pip-variables
   rules:
     - if: $CI_COMMIT_TAG =~ /(?i)\A(?:v?(?:([0-9]+)!)?([0-9]+(?:\.[0-9]+)*)([-_.]?((a|b|c|rc|alpha|beta|pre|preview))[-_.]?([0-9]+)?)?((?:-([0-9]+))|(?:[-_.]?(post|rev|r)[-_.]?([0-9]+)?))?([-_.]?(dev)[-_.]?([0-9]+)?)?(?:\+([a-z0-9]+(?:[-_.][a-z0-9]+)*))?)\z/
-      exists: *pypi-files
+      exists:
+        - src/**/*
+        - tests/**/*
+        - pyproject.toml
   image: python:3.8-slim-bookworm
   variables:
     TWINE_USERNAME: gitlab-ci-token
