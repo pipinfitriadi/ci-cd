@@ -45,7 +45,9 @@ variables:
 .jds-rules:
   rules:
     - if: $BRANCH_CONDITION
-      changes: [*pypi-files, requirements.txt]
+      changes: &jds-rules-changes
+        - *pypi-files
+        - requirements.txt
 .pip-variables:
   variables:
     PIP_ROOT_USER_ACTION: ignore
@@ -101,7 +103,7 @@ Docker:
     - Code Coverage
   rules:
     - if: $[[ inputs.docker-release ]] && $BRANCH_CONDITION
-      changes: !reference [.jds-rules, rules, 0, changes]
+      changes: *jds-rules-changes
   image: docker:24.0.5
   services: [docker:24.0.5-dind]
   variables:
