@@ -61,6 +61,7 @@ stages: [Test, Release, Deploy]
 Test:
   stage: Test
   script:
+    - echo $CI_COMMIT_BRANCH
     - echo $(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
 Code Quality:
   stage: Test
