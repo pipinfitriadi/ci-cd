@@ -18,7 +18,7 @@ spec:
       type: boolean
       default: true
     docker-tag-prod-for-branch-main:
-      description:
+      description: This boolean input determines the type of Docker image tag to release. When set to `true`, the release uses Google Distroless's nonroot image with the tag `:prod`. When set to `false`, the release uses Google Distroless's debug-nonroot image with the tag `:dev`.
       type: boolean
       default: true
     infra-provider:
@@ -58,12 +58,6 @@ stages: [Test, Release, Deploy]
     - src/**/*
     - tests/**/*
     - pyproject.toml
-Test:
-  stage: Test
-  script:
-    - echo $CI_COMMIT_BRANCH
-    - echo $(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
-    - echo $(if [[ $CI_COMMIT_BRANCH == 'hotfix/0.1.10' && $[[ inputs.docker-tag-prod-for-branch-main ]] ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
 Code Quality:
   stage: Test
   extends: .pip-variables
@@ -186,8 +180,8 @@ Docker:
       COPY --from=package /opt/venv/ /opt/venv/
       EOF
     - |
-      BUILD_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
-      IMAGE_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' ]]; then echo 'prod'; else echo 'dev'; fi)
+      BUILD_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
+      IMAGE_TAG=$(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'prod'; else echo 'dev'; fi)
       cat <<EOF > docker-compose.yaml
       services:
         dataproduct:
