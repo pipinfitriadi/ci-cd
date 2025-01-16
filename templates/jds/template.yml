@@ -19,7 +19,7 @@ spec:
       default: true
     docker-tag-prod-for-branch-main:
       description:
-      type: boolean
+      # type: boolean
       default: true
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
