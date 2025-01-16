@@ -62,8 +62,8 @@ Test:
   stage: Test
   script:
     - echo $CI_COMMIT_BRANCH
-    - echo $(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
-    - echo $(if [[ $CI_COMMIT_BRANCH == 'hotfix/0.1.10' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
+    - echo $(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
+    - echo $(if [[ $CI_COMMIT_BRANCH == 'hotfix/0.1.10' && $[[ inputs.docker-tag-prod-for-branch-main ]] ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
 Code Quality:
   stage: Test
   extends: .pip-variables
