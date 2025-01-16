@@ -168,6 +168,7 @@ Docker:
       FROM gcr.io/distroless/python3-debian12:$TAG AS final
       LABEL maintainer=pipinfitriadi@gmail.com
       ENV PYTHONPATH=$PYTHONPATH:/opt/venv/
+      COPY --from=python:3.8-slim-bookworm /usr/bin/bash /bin/bash
       COPY --from=python:3.8-slim-bookworm /usr/local/lib/ /usr/local/lib/
       COPY --from=python:3.8-slim-bookworm /usr/local/bin/python3.8 /usr/local/bin/python3.8
       ENTRYPOINT ["/opt/venv/bin/dataproduct"]
