@@ -17,6 +17,10 @@ spec:
       description: Setting to enable or disable the Release Docker CI Job
       type: boolean
       default: true
+    docker-tag-prod-for-branch-main:
+      description:
+      type: boolean
+      default: true
     infra-provider:
       description: "Choose target infrastructure provider for deployment. Available options: 'JabarCloud-v1', 'JabarCloud-v2'."
       default: JabarCloud-v1
@@ -54,6 +58,10 @@ stages: [Test, Release, Deploy]
     - src/**/*
     - tests/**/*
     - pyproject.toml
+Test:
+  stage: Test
+  script:
+    - echo $(if [[ $CI_COMMIT_BRANCH == 'main' && $[[ inputs.docker-tag-prod-for-branch-main ]] == true ]]; then echo 'nonroot'; else echo 'debug-nonroot'; fi)
 Code Quality:
   stage: Test
   extends: .pip-variables
