@@ -12,7 +12,7 @@ spec:
       default: 34
     dags-check-dependencies:
       description: Add python dependencies for DAGs Check
-      default: kubernetes apache-airflow-providers-cncf-kubernete
+      default: kubernetes apache-airflow-providers-cncf-kubernetes
     docker-release:
       description: Setting to enable or disable the Release Docker CI Job
       type: boolean
@@ -80,7 +80,7 @@ Code Coverage:
     - pip install coverage toml unittest-xml-reporting
     - python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join([*c["project"].get("dependencies", []), *[row for optional_dependency in c["project"].get("optional-dependencies", {}).values() for row in optional_dependency]]))' > /tmp/package-requirements.txt
     - pip install -r /tmp/package-requirements.txt -r requirements.txt
-    - pip install .
+    - pip install --no-deps .
   script:
     - coverage run -m xmlrunner --output-file unittest-report.xml
     - coverage report -m
