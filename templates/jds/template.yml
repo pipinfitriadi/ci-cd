@@ -12,7 +12,7 @@ spec:
       default: 34
     dags-check-dependencies:
       description: Add python dependencies for DAGs Check
-      default: kubernetes apache-airflow-providers-cncf-kubernete
+      default: kubernetes apache-airflow-providers-cncf-kubernetes
     docker-release:
       description: Setting to enable or disable the Release Docker CI Job
       type: boolean
