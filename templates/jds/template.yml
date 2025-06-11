@@ -248,7 +248,7 @@ DAGs Deploy:
     - cd /tmp/repo/
   script:
     - |
-      if [ $(git submodule--helper list | awk '{print $4}' | grep $DAG_PARENT_DIR$CI_PROJECT_NAME) ]; then
+      if [ $(git submodule--helper list | awk '{print $4}' | grep "^$DAG_PARENT_DIR$CI_PROJECT_NAME$") ]; then
         git submodule update --init -- $DAG_PARENT_DIR$CI_PROJECT_NAME
         git submodule deinit -f -- $DAG_PARENT_DIR$CI_PROJECT_NAME
         git rm -f $DAG_PARENT_DIR$CI_PROJECT_NAME
