@@ -5,10 +5,6 @@
 # Written by Pipin Fitriadi <pipinfitriadi@gmail.com>, 28 August 2024
 
 stages: [Release]
-Test:
-  stage: Release
-  script:
-    - echo Runner tags "$CI_RUNNER_TAGS"
 CI/CD Catalog:
   stage: Release
   rules:

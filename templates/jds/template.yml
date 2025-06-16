@@ -58,6 +58,36 @@ stages: [Test, Release, Deploy]
     - src/**/*
     - tests/**/*
     - pyproject.toml
+# ============== Start Hapus ==============
+.test: &test
+  stage: Test
+  image: docker:24.0.5
+  script:
+    - echo Runner tags "$CI_RUNNER_TAGS"
+    - docker info
+    - docker compose version
+Test:
+  <<: *test
+  rules:
+    - if: $CI_RUNNER_TAGS =~ /"dataengineer"/
+  services: [docker:24.0.5-dind]
+  variables:
+    DOCKER_TLS_CERTDIR: /certs
+    DOCKER_DRIVER: overlay2
+Test (On Kubernetes-Runner):
+  <<: *test
+  rules:
+    - if: $CI_RUNNER_TAGS !~ /"dataengineer"/
+  services:
+    - name: docker:24.0.5-dind
+      variables:
+        HEALTHCHECK_TCP_PORT: "2376"
+  variables:
+    DOCKER_TLS_CERTDIR: /certs
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+# ============== End Hapus ================
 Code Quality:
   stage: Test
   extends: .pip-variables
@@ -68,19 +98,6 @@ Code Quality:
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
-# ============== Start Hapus ==============
-Test:
-  stage: Test
-  image: docker:24.0.5
-  services: [docker:24.0.5-dind]
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: /certs
-  script:
-    - echo Runner tags "$CI_RUNNER_TAGS"
-    - docker info
-    - docker compose version
-# ============== End Hapus ================
 Code Coverage:
   stage: Test
   extends: .pip-variables
