@@ -63,12 +63,14 @@ stages: [Test, Release, Deploy]
   stage: Test
   image: docker:24.0.5
   script:
-    - echo $CI_RUNNER_TAGS
+    - echo "Runner tags = $CI_RUNNER_TAGS"
     - docker compose version
 Test:
   <<: *test
   rules:
     - if: '$CI_RUNNER_TAGS !~ /(dataengineer|jabarcloud2)/'
+      when: on_success
+    - when: never
   services: [docker:24.0.5-dind]
   variables:
     DOCKER_TLS_CERTDIR: /certs
@@ -77,6 +79,8 @@ Test (On Kubernetes-Runner):
   <<: *test
   rules:
     - if: '$CI_RUNNER_TAGS =~ /(dataengineer|jabarcloud2)/'
+      when: on_success
+    - when: never
   services:
     - name: docker:24.0.5-dind
       variables:
