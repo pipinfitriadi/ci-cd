@@ -64,13 +64,12 @@ stages: [Test, Release, Deploy]
   image: docker:24.0.5
   script:
     - echo "Runner tags = $CI_RUNNER_TAGS"
-    - docker compose version
 Test:
   <<: *test
   rules:
-    - if: '$CI_RUNNER_TAGS =~ /dataengineer/'
+    - if: '$CI_RUNNER_TAGS =~ /"dataengineer"/'
       when: never
-    - if: '$CI_RUNNER_TAGS =~ /jabarcloud2/'
+    - if: '$CI_RUNNER_TAGS =~ /"jabarcloud2"/'
       when: never
     - when: on_success
   services: [docker:24.0.5-dind]
@@ -80,9 +79,9 @@ Test:
 Test (On Kubernetes-Runner):
   <<: *test
   rules:
-    - if: '$CI_RUNNER_TAGS =~ /dataengineer/'
+    - if: '$CI_RUNNER_TAGS =~ /"dataengineer"/'
       when: on_success
-    - if: '$CI_RUNNER_TAGS =~ /jabarcloud2/'
+    - if: '$CI_RUNNER_TAGS =~ /"jabarcloud2"/'
       when: on_success
     - when: never
   services:
