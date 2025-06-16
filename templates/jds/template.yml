@@ -67,11 +67,7 @@ stages: [Test, Release, Deploy]
 Test:
   <<: *test
   rules:
-    - if: '$CI_RUNNER_TAGS =~ /"dataengineer"/'
-      when: never
-    - if: '$CI_RUNNER_TAGS =~ /"jabarcloud2"/'
-      when: never
-    - when: on_success
+    - if: $CI_RUNNER_TAGS !~ /\[.*"(dataengineer|jabarcloud2)".*\]/
   services: [docker:24.0.5-dind]
   variables:
     DOCKER_TLS_CERTDIR: /certs
@@ -79,11 +75,7 @@ Test:
 Test (On Kubernetes-Runner):
   <<: *test
   rules:
-    - if: '$CI_RUNNER_TAGS =~ /"dataengineer"/'
-      when: on_success
-    - if: '$CI_RUNNER_TAGS =~ /"jabarcloud2"/'
-      when: on_success
-    - when: never
+    - if: $CI_RUNNER_TAGS =~ /\[.*"(dataengineer|jabarcloud2)".*\]/
   services:
     - name: docker:24.0.5-dind
       variables:
