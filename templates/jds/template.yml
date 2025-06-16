@@ -78,7 +78,7 @@ Test:
 Test (On Kubernetes-Runner):
   <<: *test
   rules:
-    - if: '$CI_RUNNER_TAGS !~ /(^|,)("dataengineer"|"jabarcloud2")/(,|$)'
+    - if: '$CI_RUNNER_TAGS =~ /(^|,)("dataengineer"|"jabarcloud2")/(,|$)'
       when: on_success
     - when: never
   services:
