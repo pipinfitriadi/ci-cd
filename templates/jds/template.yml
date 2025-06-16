@@ -63,8 +63,6 @@ stages: [Test, Release, Deploy]
   stage: Test
   image: docker:24.0.5
   script:
-    - echo Runner tags "$CI_RUNNER_TAGS"
-    - docker info
     - docker compose version
 Test:
   <<: *test
