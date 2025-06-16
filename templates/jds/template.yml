@@ -72,7 +72,7 @@ Code Quality:
 Test:
   stage: Test
   script:
-    - echo "Runner tags: $CI_RUNNER_TAGS"
+    - echo Runner tags "$CI_RUNNER_TAGS"
 # ============== End Hapus ================
 Code Coverage:
   stage: Test
