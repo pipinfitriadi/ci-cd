@@ -71,8 +71,15 @@ Code Quality:
 # ============== Start Hapus ==============
 Test:
   stage: Test
+  image: docker:24.0.5
+  services: [docker:24.0.5-dind]
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: /certs
   script:
     - echo Runner tags "$CI_RUNNER_TAGS"
+    - docker info
+    - docker compose version
 # ============== End Hapus ================
 Code Coverage:
   stage: Test
