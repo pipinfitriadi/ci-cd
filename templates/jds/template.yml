@@ -68,6 +68,12 @@ Code Quality:
     - pip install flake8-bandit flake8-black flake8-bugbear flake8-isort
   script:
     - flake8
+# ============== Start Hapus ==============
+Test:
+  stage: Test
+  script:
+    - echo "Runner tags: $CI_RUNNER_TAGS"
+# ============== End Hapus ================
 Code Coverage:
   stage: Test
   extends: .pip-variables
